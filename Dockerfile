@@ -1,23 +1,20 @@
-FROM centos:7
+FROM centos:8
 
 ARG USER_ID=14
 ARG GROUP_ID=50
 
 MAINTAINER Fer Uria <fauria@gmail.com>
-LABEL Description="vsftpd Docker image based on Centos 7. Supports passive mode and virtual users." \
+LABEL Description="vsftpd Docker image based on Centos 8. Supports passive mode and virtual users." \
 	License="Apache License 2.0" \
 	Usage="docker run -d -p [HOST PORT NUMBER]:21 -v [HOST FTP HOME]:/home/vsftpd fauria/vsftpd" \
 	Version="1.0"
 
-RUN yum -y update && yum clean all
 RUN yum install -y \
-	vsftpd \
-	db4-utils \
-	db4 \
-	iproute && yum clean all
-
-RUN usermod -u ${USER_ID} ftp
-RUN groupmod -g ${GROUP_ID} ftp
+		vsftpd \
+		iproute && \
+		yum clean all && \
+	 	usermod -u ${USER_ID} ftp && \
+		groupmod -g ${GROUP_ID} ftp
 
 ENV FTP_USER **String**
 ENV FTP_PASS **Random**
@@ -38,12 +35,11 @@ COPY vsftpd.conf /etc/vsftpd/
 COPY vsftpd_virtual /etc/pam.d/
 COPY run-vsftpd.sh /usr/sbin/
 
-RUN chmod +x /usr/sbin/run-vsftpd.sh
-RUN mkdir -p /home/vsftpd/
-RUN chown -R ftp:ftp /home/vsftpd/
+RUN chmod +x /usr/sbin/run-vsftpd.sh && \
+		mkdir -p /home/vsftpd/ && \
+		chown -R ftp:ftp /home/vsftpd/
 
-VOLUME /home/vsftpd
-VOLUME /var/log/vsftpd
+VOLUME /home/vsftpd /var/log/vsftpd /etc/vsftpd
 
 EXPOSE 20 21
 
